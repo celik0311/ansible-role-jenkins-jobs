@@ -1,0 +1,19 @@
+---
+# tasks file for jobs
+- name: Install Job Configuration
+  copy: src=job.xml dest=/tmp/{{ job }}.xml
+  register: _jobupdate
+
+- name: Load Default Job Configuration
+  shell: java -jar /opt/jenkins-cli.jar -s http://192.168.2.2:8080/ create-job  < /tmp/{{ job }}.xml {{ job }}
+  register: _jobname
+  failed_when: "_jobname.rc == 1"
+  changed_when: "_jobname.rc == 0"
+
+- name: Update Job Configuration
+  shell: java -jar /opt/jenkins-cli.jar -s http://192.168.2.2:8080/ update-job  < /tmp/{{ job }}.xml {{ job }}
+  register: _updatejob
+  failed_when: "_updatejob.rc == 1"
+  changed_when: "_updatejob.rc == 0"
+  when: "_jobupdate.changed"
+
